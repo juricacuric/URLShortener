@@ -37,9 +37,19 @@ public class UrlShortener extends Controller {
                 });
     }
 
-    public CompletionStage<Result> redirect() {
-//        urlRepository.getUrlForId()
-        return null;
+    public CompletionStage<Result> redirectToUrl(String urlIdentificator) {
+        final long id = Base62.toBase10(urlIdentificator);
+        return urlRepository.getUrlForId(id)
+                .thenApply(redirectUrl -> {
+                    if (redirectUrl != null && !redirectUrl.isEmpty()) {
+                        if (!redirectUrl.startsWith("http://")) {
+                            return temporaryRedirect("http://" + redirectUrl);
+                        }
+                        return temporaryRedirect(redirectUrl);
+                    } else {
+                        return notFound();
+                    }
+                });
     }
 
 }
